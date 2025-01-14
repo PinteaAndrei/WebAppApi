@@ -1,9 +1,14 @@
-﻿namespace WebAppAPI.Models;
+﻿using System.Text.Json.Serialization;
 
-public class Restaurant
+namespace WebAppAPI.Models;
+
+public class Restaurants
 {
     public int Id { get; set; }
-    public string Name { get; set; }
-    public string Address { get; set; }
-    public ICollection<Review> Reviews { get; set; }
+    [JsonPropertyName("name")]
+    public string RestName { get; set; }
+    [JsonPropertyName("address")]
+    public string RestAddress { get; set; }
+    public string ImageUrl { get; set; }
+    public int Rating { get; set; }
 }

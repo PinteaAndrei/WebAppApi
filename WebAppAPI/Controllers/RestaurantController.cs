@@ -26,7 +26,7 @@ namespace WebAppAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRestaurant(int id)
         {
-            var restaurant = await _context.Restaurants.Include(r => r.Reviews).FirstOrDefaultAsync(r => r.Id == id);
+            var restaurant = await _context.Restaurants.FirstOrDefaultAsync(r => r.Id == id);
             if (restaurant == null)
                 return NotFound();
 
@@ -34,7 +34,7 @@ namespace WebAppAPI.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> CreateRestaurant(Restaurant restaurant)
+        public async Task<IActionResult> CreateRestaurant(Restaurants restaurant)
         {
             _context.Restaurants.Add(restaurant);
             await _context.SaveChangesAsync();
@@ -42,7 +42,7 @@ namespace WebAppAPI.Controllers
         }
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRestaurant(int id, Restaurant restaurant)
+        public async Task<IActionResult> UpdateRestaurant(int id, Restaurants restaurant)
         {
             if (id != restaurant.Id)
                 return BadRequest();

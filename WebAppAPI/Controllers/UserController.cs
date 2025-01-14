@@ -30,16 +30,54 @@ namespace WebAppAPI.Controllers
             return Ok(user);
         }
         
-        [HttpGet("{name}")]
-        public async Task<IActionResult> GetUser(string name)
+        [HttpGet("username/{username}")]
+        public async Task<IActionResult> GetUserByUsername(string username)
         {
-            var user = await _context.Users.FindAsync(name);
-            if (user == null) return NotFound();
-            return Ok(user);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                return NotFound();  
+            }
+
+            return Ok(user);  
+        }
+    
+        
+        [HttpGet("check-email")]
+        public async Task<IActionResult> CheckEmail(string email)
+        {
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == email);
+            return Ok(new { exists = emailExists });
+        }
+
+        [HttpGet("check-username")]
+        public async Task<IActionResult> CheckUsername(string username)
+        {
+            var usernameExists = await _context.Users.AnyAsync(u => u.Username == username);
+            return Ok(new { exists = usernameExists });
+        }
+        
+        [HttpGet("check-password")]
+        public async Task<IActionResult> CheckPassword(string username, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+            {
+                return Unauthorized("User not found");
+            }
+
+           
+            if (user.Pass == password)
+            {
+                return Ok(new { exists = true , userId = user.Id });
+            }
+
+            return Unauthorized("Incorrect password");
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(User user)
+        public async Task<IActionResult> CreateUser(Users user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -47,7 +85,7 @@ namespace WebAppAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
+        public async Task<IActionResult> UpdateUser(int id, Users user)
         {
             if (id != user.Id) return BadRequest();
 

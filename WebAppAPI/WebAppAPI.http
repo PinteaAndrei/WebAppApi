@@ -1,4 +1,4 @@
-@WebAppAPI_HostAddress = http://localhost:5013
+﻿@WebAppAPI_HostAddress = http://localhost:5013
 
 GET {{WebAppAPI_HostAddress}}/weatherforecast/
 Accept: application/json

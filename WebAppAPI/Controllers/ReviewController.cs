@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebAppAPI.Data;
 using WebAppAPI.Models;
+using WebAppAPI.Models;
 
 namespace WebAppAPI.Controllers
 {
@@ -20,10 +21,7 @@ namespace WebAppAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetReviews()
         {
-            var reviews = await _context.Reviews
-                .Include(r => r.User)
-                .Include(r => r.Restaurant)
-                .ToListAsync();
+            var reviews = await _context.Reviews.ToListAsync();
 
             return Ok(reviews);
         }
@@ -32,10 +30,7 @@ namespace WebAppAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReview(int id)
         {
-            var review = await _context.Reviews
-                .Include(r => r.User)
-                .Include(r => r.Restaurant)
-                .FirstOrDefaultAsync(r => r.Id == id);
+            var review = await _context.Reviews.FirstOrDefaultAsync(r => r.Id == id);
 
             if (review == null)
                 return NotFound();
@@ -43,8 +38,47 @@ namespace WebAppAPI.Controllers
             return Ok(review);
         }
 
+        [HttpGet("restaurant/{restaurantId}")]
+        public async Task<IActionResult> GetReviewsByRestaurantId(int restaurantId)
+        {
+            var reviews = await _context.Reviews
+                .Where(r => r.RestaurantId == restaurantId)
+                .ToListAsync();
+
+            if (reviews == null || !reviews.Any())
+            {
+                return NotFound("No reviews found for this restaurant.");
+            }
+
+            var reviewsWithUserDetails = new List<object>();
+
+            foreach (var review in reviews)
+            {
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == review.UserId);
+
+                if (user != null)
+                {
+                    reviewsWithUserDetails.Add(new
+                    {
+                        review.Id,
+                        review.Comment,
+                        review.Rating,
+                        User = new
+                        {
+                            user.Id,
+                            user.Username,
+                        }
+                    });
+                }
+            }
+
+            return Ok(reviewsWithUserDetails);
+        }
+        
+
         [HttpPost]
-        public async Task<IActionResult> CreateReview(Review review)
+        public async Task<IActionResult> CreateReview(Reviews review)
         {
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();
@@ -53,7 +87,7 @@ namespace WebAppAPI.Controllers
 
         
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReview(int id, Review review)
+        public async Task<IActionResult> UpdateReview(int id, Reviews review)
         {
             if (id != review.Id)
                 return BadRequest();
