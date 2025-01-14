@@ -33,6 +33,23 @@ namespace WebAppAPI.Controllers
             return Ok(restaurant);
         }
         
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchRestaurants(string query)
+        {
+            if (string.IsNullOrEmpty(query))
+                return BadRequest("Search query cannot be empty");
+
+            
+            var restaurants = await _context.Restaurants
+                .Where(r => r.RestName.Contains(query) || r.RestAddress.Contains(query))  
+                .ToListAsync();
+
+            if (restaurants == null || restaurants.Count == 0)
+                return NotFound("No restaurants found");
+
+            return Ok(restaurants);
+        }
+        
         [HttpPost]
         public async Task<IActionResult> CreateRestaurant(Restaurants restaurant)
         {
